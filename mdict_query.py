@@ -263,6 +263,23 @@ class IndexBuilder(object):
         conn.close()
         return lookup_result_list
 
+    def get_mdd_keys(self, query = ''):
+        if not self._mdd_db:
+            return []
+        conn = sqlite3.connect(self._mdd_db)
+        if query:
+            if '*' in query:
+                query = query.replace('*','%')
+            else:
+                query = query + '%'
+            cursor = conn.execute('SELECT key_text FROM MDX_INDEX WHERE key_text LIKE \"' + query + '\"')
+            keys = [item[0] for item in cursor]
+        else:
+            cursor = conn.execute('SELECT key_text FROM MDX_INDEX')
+            keys = [item[0] for item in cursor]
+        conn.close()
+        return keys
+
     def get_mdx_keys(self, query = ''):
         conn = sqlite3.connect(self._mdx_db)
         if query:
@@ -279,28 +296,12 @@ class IndexBuilder(object):
         return keys
 
 
-    def mdd_lookup(self, keyword):
-        conn = sqlite3.connect(self._mdx_db)
-        cursor = conn.execute("SELECT * FROM MDX_INDEX WHERE key_text = " + "\"" + keyword + "\"")
-        lookup_result_list = []
-        mdx_file = open(self._mdx_file,'rb')
-        for result in cursor:
-            index = {}
-            index['file_pos'] = result[1]
-            index['compressed_size'] = result[2]
-            index['record_block_type'] = result[3]
-            index['record_start'] = result[4]
-            index['record_end'] = result[5]
-            index['offset'] = result[6]
-            lookup_result_list.append(self.get_mdx_by_index(mdx_file, index))
-        conn.close()
-        return lookup_result_list
 
-mdx_builder = IndexBuilder("oald.mdx")
-text = mdx_builder.mdx_lookup('dedication')
-keys = mdx_builder.get_mdx_keys()
-keys1 = mdx_builder.get_mdx_keys('abstrac')
-keys2 = mdx_builder.get_mdx_keys('*tion')
-for key in keys2:
-    text = mdx_builder.mdx_lookup(key)[0]
-pass
+# mdx_builder = IndexBuilder("oald.mdx")
+# text = mdx_builder.mdx_lookup('dedication')
+# keys = mdx_builder.get_mdx_keys()
+# keys1 = mdx_builder.get_mdx_keys('abstrac')
+# keys2 = mdx_builder.get_mdx_keys('*tion')
+# for key in keys2:
+    # text = mdx_builder.mdx_lookup(key)[0]
+# pass
