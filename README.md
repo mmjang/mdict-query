@@ -2,7 +2,7 @@ This a python module for looking up `mdict` dictionary file (`.mdx` and `.mdd`).
 
 ## Usage
 
-Construct the `IndexBuilder` object, which builds the sqlite index for `.mdx` file and the corresponding `.mdd` file (if exists).
+Constructs the `IndexBuilder` object, which builds the sqlite index for `.mdx` file and the corresponding `.mdd` file (if exists).
 
     from mdict_query import IndexBuilder
     builder = IndexBuilder('ode.mdx')
