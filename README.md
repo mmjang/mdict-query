@@ -17,7 +17,7 @@ Filter mdx keys by wildcard:
     builder.get_mdx_keys('dedicat*')
     # ==> ['dedicate', 'dedication', ...]
 
-Looks up `mdx` with a key:
+Looks up mdx with a key:
 
     result_text = builder.mdx_lookup('dedication')
     
@@ -28,11 +28,11 @@ Get all mdd keys:
 
 Filter mdd keys by wildcard:
 
-    builder.get_mdx_keys('*.css')
+    builder.get_mdd_keys('*.css')
     # ==> ['/style.css', ...]
     
-Looks up `mdd` with a key:
+Looks up mdd with a key:
 
-    bytes_list = builder.mdx_lookup('/style.css')
+    bytes_list = builder.mdd_lookup('/style.css')
     #bytes_list is the bytes for the file stored in mdd file
 
