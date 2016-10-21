@@ -22,27 +22,7 @@ if sys.hexversion >= 0x03000000:
     unicode = str
 
 
-def get_mdd_by_index(fmdd, index):
-    fmdd.seek(index['file_pos'])
-    record_block_compressed = fmdd.read(index['compressed_size'])
-    record_block_type = record_block_compressed[:4]
-    record_block_type = index['record_block_type']
-    #adler32 = unpack('>I', record_block_compressed[4:8])[0]
-    if record_block_type == 0:
-        _record_block = record_block_compressed[8:]
-        # lzo compression
-    elif record_block_type == 1:
-        if lzo is None:
-            print("LZO compression is not supported")
-            # decompress
-        header = b'\xf0' + pack('>I', index['decompressed_size'])
-        _record_block = lzo.decompress(header + record_block_compressed[8:])
-            # zlib compression
-    elif record_block_type == 2:
-        # decompress
-        _record_block = zlib.decompress(record_block_compressed[8:])
-    data = _record_block[index['record_start'] - index['offset']:index['record_end'] - index['offset']]
-    return data
+
 
 
 
