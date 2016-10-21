@@ -36,5 +36,5 @@ Filter mdd keys by wildcard:
 Looks up mdd with a key:
 
     bytes_list = builder.mdd_lookup('/style.css')
-    #bytes_list is the bytes for the file stored in mdd file
+    #bytes_list is the bytes list of the file stored in mdd
 
