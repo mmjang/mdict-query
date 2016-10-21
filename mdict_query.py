@@ -262,6 +262,23 @@ class IndexBuilder(object):
             lookup_result_list.append(self.get_mdx_by_index(mdx_file, index))
         conn.close()
         return lookup_result_list
+	
+    def mdd_lookup(self, keyword):
+        conn = sqlite3.connect(self._mdd_db)
+        cursor = conn.execute("SELECT * FROM MDX_INDEX WHERE key_text = " + "\"" + keyword + "\"")
+        lookup_result_list = []
+        mdd_file = open(self._mdd_file,'rb')
+        for result in cursor:
+            index = {}
+            index['file_pos'] = result[1]
+            index['compressed_size'] = result[2]
+            index['record_block_type'] = result[3]
+            index['record_start'] = result[4]
+            index['record_end'] = result[5]
+            index['offset'] = result[6]
+            lookup_result_list.append(self.get_mdd_by_index(mdd_file, index))
+        conn.close()
+        return lookup_result_list
 
     def get_mdd_keys(self, query = ''):
         if not self._mdd_db:
