@@ -1,5 +1,5 @@
 This is a python module for looking up `mdict` dictionary file (`.mdx` and `.mdd`). 
-Based on (https://bitbucket.org/xwang/mdict-analysis)[mdict].
+Based on [mdict](https://bitbucket.org/xwang/mdict-analysis).
 
 ## Usage
 
