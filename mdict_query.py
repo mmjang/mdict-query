@@ -22,36 +22,7 @@ if sys.hexversion >= 0x03000000:
     unicode = str
 
 
-
-
-
-
-# for item in index_list:
-#     mdx_file.seek(item['file_pos'])
-#     record_block_compressed = mdx_file.read(item['compressed_size'])
-#     record_block_type = record_block_compressed[:4]
-#     record_block_type = item['record_block_type']
-#     #adler32 = unpack('>I', record_block_compressed[4:8])[0]
-#     if record_block_type == b'\x00\x00\x00\x00':
-#         _record_block = record_block_compressed[8:]
-#         # lzo compression
-#     elif record_block_type == b'\x01\x00\x00\x00':
-#         if lzo is None:
-#             print("LZO compression is not supported")
-#             break
-#             # decompress
-#         header = b'\xf0' + pack('>I', item['decompressed_size'])
-#         _record_block = lzo.decompress(header + record_block_compressed[8:])
-#             # zlib compression
-#     elif record_block_type == b'\x02\x00\x00\x00':
-#         # decompress
-#         _record_block = zlib.decompress(record_block_compressed[8:])
-#     record = _record_block[item['record_start'] - item['offset']:item['record_end'] - item['offset']]
-#     record = record.decode('utf-8', errors='ignore').strip(u'\x00').encode('utf-8')
-#     record = record.decode('utf-8')
-#     pass
-
-class IndexBuilder(object):
+class IndexBuilder(object, force_rebuild = False):
     def __init__(self, fname, encoding = "", passcode = None):
         self._mdx_file = fname
         self._mdd_file = ""
@@ -61,6 +32,14 @@ class IndexBuilder(object):
         assert(_file_extension == '.mdx')
         assert(os.path.isfile(fname))
         self._mdx_db = _filename + ".mdx.db"
+        # make index anyway
+        if force_rebuild:
+            self._make_mdx_index(self._mdx_db)
+            if os.path.isfile(_filename + '.mdd'):
+                self._mdd_file = _filename + ".mdd"
+                self._mdd_db = _filename + ".mdd.db"
+                self._make_mdd_index(self._mdd_db)
+
         if os.path.isfile(self._mdx_db):
             #read from META table
             conn = sqlite3.connect(self._mdx_db)
