@@ -22,8 +22,8 @@ if sys.hexversion >= 0x03000000:
     unicode = str
 
 
-class IndexBuilder(object, force_rebuild = False):
-    def __init__(self, fname, encoding = "", passcode = None):
+class IndexBuilder(object):
+    def __init__(self, fname, encoding = "", passcode = None,force_rebuild=False):
         self._mdx_file = fname
         self._mdd_file = ""
         self._encoding = ''
