@@ -72,5 +72,4 @@ class Dir(object):
     def _ensure_config_consistency(self):
         pass
 
-
 Dir('mdx')

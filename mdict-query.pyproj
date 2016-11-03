@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{f227ad7e-74e4-4364-ad90-d2b3dda5abf6}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>mdict_dir.py</StartupFile>
+    <StartupFile>web.py</StartupFile>
     <SearchPath />
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -21,14 +21,14 @@
     <PtvsTargetsFile>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets</PtvsTargetsFile>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="test.jpg" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="mdict_dir.py" />
     <Compile Include="mdict_query.py" />
     <Compile Include="pureSalsa20.py" />
     <Compile Include="readmdict.py" />
     <Compile Include="ripemd128.py" />
+    <Compile Include="web.py">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <Import Project="$(PtvsTargetsFile)" Condition="Exists($(PtvsTargetsFile))" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition="!Exists($(PtvsTargetsFile))" />
