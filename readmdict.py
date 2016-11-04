@@ -843,8 +843,8 @@ class MDX(MDict):
         meta = {}
         meta['encoding'] = self._encoding
         meta['stylesheet'] = json.dumps(self._stylesheet)
-        meta['title'] = self._title
-        meta['description'] = self._description
+        #meta['title'] = self._title
+        #meta['description'] = self._description
 
         return {"index_dict_list":index_dict_list, 'meta':meta}
 if __name__ == '__main__':
