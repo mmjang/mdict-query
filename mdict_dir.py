@@ -49,14 +49,17 @@ class Dir(object):
                 _filename, _file_extension = os.path.splitext(full_name)
                 if _file_extension == '.mdx':
                     _config_single_dic = {
-                        'dict_name': os.path.basename(_filename),
+                        'title': '',
+                        'description':'',
                         'mdx_name': full_name,
                         'has_mdd': os.path.isfile(_filename + '.mdd')
                         }
                     try:
-                        IndexBuilder(full_name)
+                        ib = IndexBuilder(full_name)
                     except Exception:
                         continue
+                    _config_single_dic['title'] = ib._title
+                    _config_single_dic['description'] = ib._description
                     dict_list.append(_config_single_dic)
         self._config['dicts'] = dict_list
 

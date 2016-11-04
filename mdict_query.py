@@ -28,6 +28,8 @@ class IndexBuilder(object):
         self._mdd_file = ""
         self._encoding = ''
         self._stylesheet = {}
+        self._title = ''
+        self._description = ''
         _filename, _file_extension = os.path.splitext(fname)
         assert(_file_extension == '.mdx')
         assert(os.path.isfile(fname))
@@ -50,7 +52,15 @@ class IndexBuilder(object):
 
             cursor = conn.execute("SELECT * FROM META WHERE key = \"stylesheet\"")
             for cc in cursor:
-                self._encoding = cc[1]
+                self._stylesheet = json.loads(cc[1])
+
+            cursor = conn.execute("SELECT * FROM META WHERE key = \"title\"")
+            for cc in cursor:
+                self._title = cc[1]
+
+            cursor = conn.execute("SELECT * FROM META WHERE key = \"description\"")
+            for cc in cursor:
+                self._description = cc[1]
 
             #for cc in cursor:
             #    if cc[0] == 'encoding':
@@ -75,7 +85,7 @@ class IndexBuilder(object):
         pass
     
 
-    def _replace_stylesheet(self, tet):
+    def _replace_stylesheet(self, txt):
         # substitute stylesheet definition
         txt_list = re.split('`\d+`', txt)
         txt_tag = re.findall('`\d+`', txt)
@@ -136,7 +146,10 @@ class IndexBuilder(object):
         c.executemany(
             'INSERT INTO META VALUES (?,?)', 
             [('encoding', meta['encoding']),
-             ('stylesheet', meta['stylesheet'])]
+             ('stylesheet', meta['stylesheet']),
+             ('title', meta['title']),
+             ('description', meta['description'])
+             ]
             )
         
         conn.commit()
