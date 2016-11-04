@@ -1,12 +1,12 @@
 from flask import Flask, send_from_directory
 from mdict_dir import Dir
+from mdict_query import IndexBuilder
 import os
 
-mdict = Dir('mdx')
-config = mdict._config['dicts'][0]
-builder = config['builder']
-app = Flask(__name__)
+IndexBuilder('vocab.mdx')
+pass
 
+app = Flask(__name__)
 # add reg support
 from werkzeug.routing import BaseConverter
 
@@ -17,6 +17,14 @@ class RegexConverter(BaseConverter):
 
 app.url_map.converters['regex'] = RegexConverter
 #################
+
+# init mdx
+
+mdict = Dir('mdx')
+config = mdict._config['dicts'][1]
+builder = config['builder']
+
+##########
 
 @app.route('/')
 def hello_world():
@@ -49,7 +57,7 @@ def getFile(base,ext):
 @app.route('/search/<hwd>')
 def search(hwd):
     text = builder.mdx_lookup(hwd)[0]
-    return text
+    return text.replace("\r\n","").replace("entry://","").replace("sound://","")
     
 if __name__ == '__main__':
    app.run('127.0.0.1',5000, debug = True)

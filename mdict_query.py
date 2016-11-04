@@ -43,12 +43,19 @@ class IndexBuilder(object):
         if os.path.isfile(self._mdx_db):
             #read from META table
             conn = sqlite3.connect(self._mdx_db)
-            cursor = conn.execute("SELECT * FROM META WHERE key = \"encoding\"")
+            cursor = conn.execute("SELECT * FROM META")
             for cc in cursor:
-                self._encoding = cc[1]
-            cursor = conn.execute("SELECT * FROM META WHERE key = \"stylesheet\"")
-            for cc in cursor:
-                self._stylesheet = json.loads(cc[1])            
+                if cc[0] == 'encoding':
+                    self._encoding = cc[1]
+                    continue
+                if cc[0] == 'stylesheet':
+                    self._stylesheet = json.loads(cc[1])
+                    continue
+                if cc[0] == 'title':
+                    self._title = cc[1]
+                    continue
+                if cc[0] == 'title':
+                    self._description = cc[1]
         else:
             self._make_mdx_index(self._mdx_db)
 
@@ -111,16 +118,20 @@ class IndexBuilder(object):
                (key text,
                 value text
                 )''')
-        c.executemany(
+
+        for k,v in meta:
+            c.execute(
             'INSERT INTO META VALUES (?,?)', 
-            [('encoding', meta['encoding']),
-             ('stylesheet', meta['stylesheet'])]
+            (k, v)
             )
+        
         conn.commit()
         conn.close()
         #set class member
         self._encoding = meta['encoding']
         self._stylesheet = json.loads(meta['stylesheet'])
+        self._title = meta['title']
+        self._description = meta['description']
 
 
     def _make_mdd_index(self, db_name):

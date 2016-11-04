@@ -267,6 +267,17 @@ class MDict(object):
             if encoding in ['GBK', 'GB2312']:
                 encoding = 'GB18030'
             self._encoding = encoding
+        # 读取标题和描述
+        if b'Title' in header_tag:
+            self._title = header_tag[b'Title'].decode('utf-8')
+        else:
+            self._title = ''
+
+        if b'Description' in header_tag:
+            self._description = header_tag[b'Description'].decode('utf-8')
+        else:
+            self._description = ''
+        pass
         # encryption flag
         #   0x00 - no encryption
         #   0x01 - encrypt record block
@@ -832,6 +843,9 @@ class MDX(MDict):
         meta = {}
         meta['encoding'] = self._encoding
         meta['stylesheet'] = json.dumps(self._stylesheet)
+        meta['title'] = self._title
+        meta['description'] = self._description
+
         return {"index_dict_list":index_dict_list, 'meta':meta}
 if __name__ == '__main__':
     import sys
