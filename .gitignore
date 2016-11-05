@@ -21,6 +21,8 @@ local.properties
 *.jpg
 *.png
 *.gif
+*.mp3
+*.css
 mdx/*
 static/*
 
