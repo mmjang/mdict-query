@@ -1,12 +1,14 @@
-from flask import Flask, send_from_directory
+from flask import Flask, send_from_directory, abort, render_template
 from mdict_dir import Dir
 #from mdict_query import IndexBuilder
 import os
 import re
+import sys
 #IndexBuilder('vocab.mdx')
 #pass
 
 app = Flask(__name__)
+
 # add reg support
 from werkzeug.routing import BaseConverter
 
@@ -17,13 +19,26 @@ class RegexConverter(BaseConverter):
 
 app.url_map.converters['regex'] = RegexConverter
 #################
-
+# 将多层路径整合为文件名
+def path2file(path):
+    return path.replace('/','_')
 # 将词典名转为用于url的形式
 def title2url(title):
     return re.sub(r"。|，|？|\s|,|\.|/|\\|", "", title.lower())
-# init mdx
+# init app
 
-mdict = Dir('mdx')
+mdict_dir = 'mdx' # mdx/mdd 文件目录
+mdd_cache_dir = 'cache'
+
+if not os.path.isdir(mdict_dir):
+    print('no mdx directory\n', file=sys.stderr)
+    os.makedirs(mdict_dir)
+
+if not os.path.isdir(mdd_cache_dir):
+    os.makedirs(mdd_cache_dir)
+
+
+mdict = Dir(mdict_dir)
 config = mdict._config['dicts'][0]
 mdx_map = {}
 for dic in mdict._config['dicts']:
@@ -42,22 +57,29 @@ def all_dicts():
         responce = responce + "<p><a>{0}</a></p>".format(key)
     return responce
 
-@app.route('/dict/<title>/<regex(".+?\."):base><regex("css|png|jpg|gif|mp3|js"):ext>')
+@app.route('/dict/<title>/<regex(".+?\."):base><regex("css|png|jpg|gif|mp3|js|wav|ogg"):ext>')
 def getFile(title,base,ext):
+    print(base + ext, file=sys.stderr)
     if title not in mdx_map:
         return "没有找到此词典"
     builder = mdx_map[title]
-    if os.path.isfile('mdx\\{0}{1}'.format(base,ext)):
-        return send_from_directory('mdx','{0}{1}'.format(base,ext))
-
-    if not os.path.isfile('static\\{0}{1}'.format(base, ext).replace('/','_')):
-        #return 'haha'
-        cssname = builder.get_mdd_keys('*{0}{1}'.format(base,ext).replace("/","\\"))[0]
-        cssbyte = builder.mdd_lookup(cssname)[0]
-        cssfile = open('static\\{0}{1}'.format(base, ext).replace('/','_'),'wb')
-        cssfile.write(cssbyte)
-        cssfile.close()
-    return send_from_directory('static','{0}{1}'.format(base, ext).replace('/','_'))
+    # 是否为外挂文件
+    external_file = os.path.join(mdict_dir, base + ext)
+    if os.path.isfile(external_file):
+        return send_from_directory(mdict_dir, base + ext)
+    
+    # 是否是mdd内的文件
+    cache_name = path2file(base + ext)
+    cache_full = os.path.join(mdd_cache_dir, cache_name)
+    if not os.path.isfile(cache_full):
+        mdd_key = '\\{0}{1}'.format(base,ext).replace("/","\\")
+        byte = builder.mdd_lookup(mdd_key)
+        if not byte: # 在 mdd 内未找到指定文件
+            abort(404) # 返回 404
+        file = open(cache_full,'wb')
+        file.write(byte[0])
+        file.close()
+    return send_from_directory(mdd_cache_dir, cache_name)
 
 
 @app.route('/dict/<title>/<hwd>')
@@ -71,7 +93,8 @@ def search(title, hwd):
     else:
         return "<p>在词典{0}中没有找到{1}</p>".format(title, hwd)
 
-    return text.replace("\r\n","").replace("entry://","").replace("sound://","")
+    #return text.replace("\r\n","").replace("entry://","").replace("sound://","")
+    return render_template("entry.html", content = text, title = title, entry = hwd)
     
 if __name__ == '__main__':
    app.run('127.0.0.1',5000, debug = True)

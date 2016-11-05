@@ -72,6 +72,7 @@ class Dir(object):
         json.dump(self._config, file_opened, ensure_ascii = False, indent = True)
         file_opened.close()
 
+    #todo: implement ensure consistency
     def _ensure_config_consistency(self):
         pass
 

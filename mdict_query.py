@@ -23,7 +23,8 @@ if sys.hexversion >= 0x03000000:
 
 
 class IndexBuilder(object):
-    def __init__(self, fname, encoding = "", passcode = None,force_rebuild=False):
+    #todo: enable history
+    def __init__(self, fname, encoding = "", passcode = None, force_rebuild = False, enable_history = False):
         self._mdx_file = fname
         self._mdd_file = ""
         self._encoding = ''
