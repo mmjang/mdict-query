@@ -50,7 +50,6 @@ class IndexBuilder(object):
             cursor = conn.execute("SELECT * FROM META WHERE key = \"encoding\"")
             for cc in cursor:
                 self._encoding = cc[1]
-
             cursor = conn.execute("SELECT * FROM META WHERE key = \"stylesheet\"")
             for cc in cursor:
                 self._stylesheet = json.loads(cc[1])

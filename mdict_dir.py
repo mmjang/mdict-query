@@ -45,6 +45,7 @@ class Dir(object):
         files_in_dir = os.listdir(self._mdict_dir)
         for item in files_in_dir:
             full_name = os.path.join(self._mdict_dir, item)
+            print(full_name)
             if os.path.isfile(full_name):
                 _filename, _file_extension = os.path.splitext(full_name)
                 if _file_extension == '.mdx':

@@ -1,4 +1,4 @@
-<html>
+﻿<html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>{{title}}/{{entry}}</title>
@@ -18,16 +18,26 @@
             player.src = url
             player.play()
         }
+
+        function makefunction(url)
+        {
+            return function () {
+                play(url)
+            }
+        }
         var all_a = document.querySelectorAll('a')
         for (i in all_a) {
             var item = all_a[i]
             if (item.href && item.href.startsWith("sound://")) {
                 var url = item.href.replace("sound://", "")
+                var func = makefunction(url)
                 item.addEventListener("click",
-                    function () {
-                        play(url)
-                    }
+                    func
                 )
+            }
+
+            if (item.href && item.href.startsWith("entry://")) {
+                item.href = item.href.replace("entry://", "")
             }
         }
     </script>

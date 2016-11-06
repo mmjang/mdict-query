@@ -24,7 +24,7 @@ def path2file(path):
     return path.replace('/','_')
 # 将词典名转为用于url的形式
 def title2url(title):
-    return re.sub(r"。|，|？|\s|,|\.|/|\\|", "", title.lower())
+    return re.sub(r"。|，|？|\s|,|\.|/|\\|(|)|（|）", "", title.lower())
 # init app
 
 mdict_dir = 'mdx' # mdx/mdd 文件目录
@@ -52,14 +52,30 @@ def hello_world():
 
 @app.route('/dict/')
 def all_dicts():
-    responce = ''
-    for key in mdx_map:
-        responce = responce + "<p><a>{0}</a></p>".format(key)
-    return responce
+    dicts = []
+    for dic in mdict._config['dicts']:
+        title = dic['title']
+        dicts.append(
+            {
+                'title' : title,
+                'url' : '/dict/{0}/'.format(title2url(title))
+                }
+            )
+    return render_template('all.html', dicts = dicts)
+
+@app.route('/dict/<title>/')
+def description(title):
+    if title not in mdx_map:
+        return "没有找到此词典"
+    for xxx in mdict._config['dicts']:
+        if title2url(xxx['title']) == title:
+            return render_template("dict.html", title = xxx['title'], description = xxx['description'], url_title = title)
+
+
 
 @app.route('/dict/<title>/<regex(".+?\."):base><regex("css|png|jpg|gif|mp3|js|wav|ogg"):ext>')
 def getFile(title,base,ext):
-    print(base + ext, file=sys.stderr)
+    #print(base + ext, file=sys.stderr)
     if title not in mdx_map:
         return "没有找到此词典"
     builder = mdx_map[title]
