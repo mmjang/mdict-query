@@ -21,14 +21,15 @@
 
         function makefunction(url)
         {
-            return function () {
+            return function (e) {
                 play(url)
+				e.preventDefault()
             }
         }
         var all_a = document.getElementsByTagName('a')
         for (i in all_a) {
             var item = all_a[i]
-            if (item.href && item.href.startsWith("sound://")) {
+            if (item.href && item.href.lastIndexOf("sound://", 0) === 0) {
                 var url = item.href.replace("sound://", "")
                 var func = makefunction(url)
                 item.addEventListener("click",
@@ -36,7 +37,7 @@
                 )
             }
 
-            if (item.href && item.href.startsWith("entry://")) {
+            if (item.href && item.href.lastIndexOf("entry://", 0) === 0) {
                 item.href = item.href.replace("entry://", "")
             }
         }
