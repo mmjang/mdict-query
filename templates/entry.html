@@ -25,7 +25,7 @@
                 play(url)
             }
         }
-        var all_a = document.querySelectorAll('a')
+        var all_a = document.getElementsByTagName('a')
         for (i in all_a) {
             var item = all_a[i]
             if (item.href && item.href.startsWith("sound://")) {
