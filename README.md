@@ -1,6 +1,6 @@
 This is a python module for looking up `mdict` dictionary files (`.mdx` and `.mdd`). 
 
-Based on [readmdict](https://bitbucket.org/xwang/mdict-analysis).
+While this project is basically a trivial extension of the original module [readmdict](https://bitbucket.org/xwang/mdict-analysis), it adds the function of looking up a single entry in `.mdx` or resource file in `.mdd` without extracting all content, which may be helpful in other projects that requires dictionaries.
 
 ## Usage
 
