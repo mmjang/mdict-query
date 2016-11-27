@@ -1,12 +1,12 @@
-from flask import Flask, send_from_directory, abort, render_template
+from flask import Flask, send_from_directory, abort, render_template, jsonify, Response
 from mdict_dir import Dir
 #from mdict_query import IndexBuilder
 import os
 import re
 import sys
+import json
 #IndexBuilder('vocab.mdx')
 #pass
-
 app = Flask(__name__)
 
 # add reg support
@@ -26,7 +26,6 @@ def path2file(path):
 def title2url(title):
     return re.sub(r"。|，|？|\s|,|\.|/|\\|(|)|（|）", "", title.lower())
 # init app
-
 mdict_dir = 'mdx' # mdx/mdd 文件目录
 mdd_cache_dir = 'cache'
 
@@ -39,12 +38,11 @@ if not os.path.isdir(mdd_cache_dir):
 
 
 mdict = Dir(mdict_dir)
-config = mdict._config['dicts'][0]
+#config = mdict._config['dicts'][0]
 mdx_map = {}
 for dic in mdict._config['dicts']:
     mdx_map[title2url(dic['title'])] = dic['builder']
 ##########
-
 @app.route('/')
 def hello_world():
     return 'Hello World'
@@ -55,12 +53,10 @@ def all_dicts():
     dicts = []
     for dic in mdict._config['dicts']:
         title = dic['title']
-        dicts.append(
-            {
+        dicts.append({
                 'title' : title,
                 'url' : '/dict/{0}/'.format(title2url(title))
-                }
-            )
+                })
     return render_template('all.html', dicts = dicts)
 
 @app.route('/dict/<title>/')
@@ -70,7 +66,19 @@ def description(title):
     for xxx in mdict._config['dicts']:
         if title2url(xxx['title']) == title:
             return render_template("dict.html", title = xxx['title'], description = xxx['description'], url_title = title)
+  
 
+@app.route('/dict/search/<query>/')
+def search(query):
+    result = []
+    for xxx in mdict._config['dicts']:
+       bd = xxx['builder']
+       result.append([title2url(xxx['title']), bd.get_mdx_keys(query)])
+    dat = json.dumps(result, ensure_ascii = False)
+    resp = Response(response=dat, # standard way to return json
+            status=200, 
+            mimetype="application/json")
+    return(resp)
 
 
 @app.route('/dict/<title>/<regex(".+?\."):base><regex("css|png|jpg|gif|mp3|js|wav|ogg"):ext>')
@@ -99,7 +107,7 @@ def getFile(title,base,ext):
 
 
 @app.route('/dict/<title>/<hwd>')
-def search(title, hwd):
+def getEntry(title, hwd):
     if title not in mdx_map:
         return "没有找到此词典"
     builder = mdx_map[title]
@@ -109,7 +117,8 @@ def search(title, hwd):
     else:
         return "<p>在词典{0}中没有找到{1}</p>".format(title, hwd)
 
-    #return text.replace("\r\n","").replace("entry://","").replace("sound://","")
+    #return
+    #text.replace("\r\n","").replace("entry://","").replace("sound://","")
     return render_template("entry.html", content = text, title = title, entry = hwd)
     
 if __name__ == '__main__':

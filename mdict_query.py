@@ -1,4 +1,3 @@
-###test
 from readmdict import MDX, MDD
 from struct import pack, unpack
 from io import BytesIO
@@ -24,13 +23,15 @@ if sys.hexversion >= 0x03000000:
 
 class IndexBuilder(object):
     #todo: enable history
-    def __init__(self, fname, encoding = "", passcode = None, force_rebuild = False, enable_history = False):
+    def __init__(self, fname, encoding = "", passcode = None, force_rebuild = False, enable_history = False, sql_index = True, check = False):
         self._mdx_file = fname
         self._mdd_file = ""
         self._encoding = ''
         self._stylesheet = {}
         self._title = ''
         self._description = ''
+        self._sql_index = sql_index
+        self._check = check
         _filename, _file_extension = os.path.splitext(fname)
         assert(_file_extension == '.mdx')
         assert(os.path.isfile(fname))
@@ -101,12 +102,13 @@ class IndexBuilder(object):
     def _make_mdx_index(self, db_name):
         mdx = MDX(self._mdx_file)
         self._mdx_db = db_name
-        index_list = (mdx.get_index())['index_dict_list']
+        returned_index = mdx.get_index(check_block = self._check)
+        index_list = returned_index['index_dict_list']
         conn = sqlite3.connect(db_name)
         c = conn.cursor()
         c.execute(
             ''' CREATE TABLE MDX_INDEX
-               (key_text text,
+               (key_text text not null unique,
                 file_pos integer,
                 compressed_size integer,
                 record_block_type integer,
@@ -116,9 +118,8 @@ class IndexBuilder(object):
                 )'''
         )
 
-        tuple_list = []
-        for item in index_list:
-            tuple = (item['key_text'],
+        tuple_list = [
+            (item['key_text'],
                      item['file_pos'],
                      item['compressed_size'],
                      item['record_block_type'],
@@ -126,11 +127,12 @@ class IndexBuilder(object):
                      item['record_end'],
                      item['offset']
                      )
-            tuple_list.append(tuple)
+            for item in index_list
+            ]
         c.executemany('INSERT INTO MDX_INDEX VALUES (?,?,?,?,?,?,?)',
                       tuple_list)
         # build the metadata table
-        meta = (mdx.get_index())['meta']
+        meta = returned_index['meta']
         c.execute(
             '''CREATE TABLE META
                (key text,
@@ -152,6 +154,13 @@ class IndexBuilder(object):
              ]
             )
         
+        if self._sql_index:
+            c.execute(
+                '''
+                CREATE UNIQUE INDEX key_index ON MDX_INDEX (key_text)
+                '''
+                )
+
         conn.commit()
         conn.close()
         #set class member
@@ -164,12 +173,12 @@ class IndexBuilder(object):
     def _make_mdd_index(self, db_name):
         mdd = MDD(self._mdd_file)
         self._mdd_db = db_name
-        index_list = mdd.get_index()
+        index_list = mdd.get_index(check_block = self._check)
         conn = sqlite3.connect(db_name)
         c = conn.cursor()
         c.execute(
             ''' CREATE TABLE MDX_INDEX
-               (key_text text,
+               (key_text text not null unique,
                 file_pos integer,
                 compressed_size integer,
                 record_block_type integer,
@@ -179,9 +188,8 @@ class IndexBuilder(object):
                 )'''
         )
 
-        tuple_list = []
-        for item in index_list:
-            tuple = (item['key_text'],
+        tuple_list = [
+            (item['key_text'],
                      item['file_pos'],
                      item['compressed_size'],
                      item['record_block_type'],
@@ -189,9 +197,17 @@ class IndexBuilder(object):
                      item['record_end'],
                      item['offset']
                      )
-            tuple_list.append(tuple)
+            for item in index_list
+            ]
         c.executemany('INSERT INTO MDX_INDEX VALUES (?,?,?,?,?,?,?)',
                       tuple_list)
+        if self._sql_index:
+            c.execute(
+                '''
+                CREATE UNIQUE INDEX key_index ON MDX_INDEX (key_text)
+                '''
+                )
+
         conn.commit()
         conn.close()
 
@@ -258,6 +274,7 @@ class IndexBuilder(object):
             index['offset'] = result[6]
             lookup_result_list.append(self.get_mdx_by_index(mdx_file, index))
         conn.close()
+        mdx_file.close()
         return lookup_result_list
 	
     def mdd_lookup(self, keyword):
@@ -274,6 +291,7 @@ class IndexBuilder(object):
             index['record_end'] = result[5]
             index['offset'] = result[6]
             lookup_result_list.append(self.get_mdd_by_index(mdd_file, index))
+        mdd_file.close()
         conn.close()
         return lookup_result_list
 
