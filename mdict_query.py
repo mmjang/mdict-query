@@ -108,9 +108,10 @@ class IndexBuilder(object):
         c = conn.cursor()
         c.execute(
             ''' CREATE TABLE MDX_INDEX
-               (key_text text not null unique,
+               (key_text text not null,
                 file_pos integer,
                 compressed_size integer,
+                decompressed_size integer,
                 record_block_type integer,
                 record_start integer,
                 record_end integer,
@@ -122,6 +123,7 @@ class IndexBuilder(object):
             (item['key_text'],
                      item['file_pos'],
                      item['compressed_size'],
+                     item['decompressed_size'],
                      item['record_block_type'],
                      item['record_start'],
                      item['record_end'],
@@ -129,7 +131,7 @@ class IndexBuilder(object):
                      )
             for item in index_list
             ]
-        c.executemany('INSERT INTO MDX_INDEX VALUES (?,?,?,?,?,?,?)',
+        c.executemany('INSERT INTO MDX_INDEX VALUES (?,?,?,?,?,?,?,?)',
                       tuple_list)
         # build the metadata table
         meta = returned_index['meta']
@@ -157,7 +159,7 @@ class IndexBuilder(object):
         if self._sql_index:
             c.execute(
                 '''
-                CREATE UNIQUE INDEX key_index ON MDX_INDEX (key_text)
+                CREATE INDEX key_index ON MDX_INDEX (key_text)
                 '''
                 )
 
@@ -181,6 +183,7 @@ class IndexBuilder(object):
                (key_text text not null unique,
                 file_pos integer,
                 compressed_size integer,
+                decompressed_size integer,
                 record_block_type integer,
                 record_start integer,
                 record_end integer,
@@ -192,6 +195,7 @@ class IndexBuilder(object):
             (item['key_text'],
                      item['file_pos'],
                      item['compressed_size'],
+                     item['decompressed_size'],
                      item['record_block_type'],
                      item['record_start'],
                      item['record_end'],
@@ -199,7 +203,7 @@ class IndexBuilder(object):
                      )
             for item in index_list
             ]
-        c.executemany('INSERT INTO MDX_INDEX VALUES (?,?,?,?,?,?,?)',
+        c.executemany('INSERT INTO MDX_INDEX VALUES (?,?,?,?,?,?,?,?)',
                       tuple_list)
         if self._sql_index:
             c.execute(
@@ -216,6 +220,7 @@ class IndexBuilder(object):
         record_block_compressed = fmdx.read(index['compressed_size'])
         record_block_type = record_block_compressed[:4]
         record_block_type = index['record_block_type']
+        decompressed_size = index['decompressed_size']
         #adler32 = unpack('>I', record_block_compressed[4:8])[0]
         if record_block_type == 0:
             _record_block = record_block_compressed[8:]
@@ -225,7 +230,7 @@ class IndexBuilder(object):
                 print("LZO compression is not supported")
                 # decompress
             header = b'\xf0' + pack('>I', index['decompressed_size'])
-            _record_block = lzo.decompress(header + record_block_compressed[8:])
+            _record_block = lzo.decompress(record_block_compressed[8:], initSize = decompressed_size, blockSize=1308672)
                 # zlib compression
         elif record_block_type == 2:
             # decompress
@@ -242,6 +247,7 @@ class IndexBuilder(object):
         record_block_compressed = fmdx.read(index['compressed_size'])
         record_block_type = record_block_compressed[:4]
         record_block_type = index['record_block_type']
+        decompressed_size = index['decompressed_size']
         #adler32 = unpack('>I', record_block_compressed[4:8])[0]
         if record_block_type == 0:
             _record_block = record_block_compressed[8:]
@@ -251,7 +257,7 @@ class IndexBuilder(object):
                 print("LZO compression is not supported")
                 # decompress
             header = b'\xf0' + pack('>I', index['decompressed_size'])
-            _record_block = lzo.decompress(header + record_block_compressed[8:])
+            _record_block = lzo.decompress(record_block_compressed[8:], initSize = decompressed_size, blockSize=1308672)
                 # zlib compression
         elif record_block_type == 2:
             # decompress
@@ -268,10 +274,11 @@ class IndexBuilder(object):
             index = {}
             index['file_pos'] = result[1]
             index['compressed_size'] = result[2]
-            index['record_block_type'] = result[3]
-            index['record_start'] = result[4]
-            index['record_end'] = result[5]
-            index['offset'] = result[6]
+            index['decompressed_size'] = result[3]
+            index['record_block_type'] = result[4]
+            index['record_start'] = result[5]
+            index['record_end'] = result[6]
+            index['offset'] = result[7]
             lookup_result_list.append(self.get_mdx_by_index(mdx_file, index))
         conn.close()
         mdx_file.close()
@@ -286,10 +293,11 @@ class IndexBuilder(object):
             index = {}
             index['file_pos'] = result[1]
             index['compressed_size'] = result[2]
-            index['record_block_type'] = result[3]
-            index['record_start'] = result[4]
-            index['record_end'] = result[5]
-            index['offset'] = result[6]
+            index['decompressed_size'] = result[3]
+            index['record_block_type'] = result[4]
+            index['record_start'] = result[5]
+            index['record_end'] = result[6]
+            index['offset'] = result[7]
             lookup_result_list.append(self.get_mdd_by_index(mdd_file, index))
         mdd_file.close()
         conn.close()

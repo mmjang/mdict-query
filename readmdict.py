@@ -207,7 +207,7 @@ class MDict(object):
                     break
                 # decompress key block
                 header = b'\xf0' + pack('>I', decompressed_size)
-                key_block = lzo.decompress(header + key_block_compressed[start + 8:end])
+                key_block = lzo.decompress(key_block_compressed[start + 8:end], initSize = decompressed_size, blockSize=1308672)
             elif key_block_type == b'\x02\x00\x00\x00':
                 # decompress key block
                 key_block = zlib.decompress(key_block_compressed[start + 8:end])
@@ -223,6 +223,7 @@ class MDict(object):
         key_list = []
         key_start_index = 0
         while key_start_index < len(key_block):
+            temp = key_block[key_start_index:key_start_index + self._number_width]
             # the corresponding record's offset in record block
             key_id = unpack(self._number_format, key_block[key_start_index:key_start_index + self._number_width])[0]
             # key text ends with '\x00'
@@ -473,7 +474,7 @@ class MDD(MDict):
                     break
                 # decompress
                 header = b'\xf0' + pack('>I', decompressed_size)
-                record_block = lzo.decompress(header + record_block_compressed[8:])
+                record_block = lzo.decompress(record_block_compressed[start + 8:end], initSize = decompressed_size, blockSize=1308672)
             elif record_block_type == b'\x02\x00\x00\x00':
                 # decompress
                 record_block = zlib.decompress(record_block_compressed[8:])
@@ -556,7 +557,7 @@ class MDD(MDict):
                 # decompress
                 header = b'\xf0' + pack('>I', decompressed_size)
                 if check_block:
-                    record_block = lzo.decompress(header + record_block_compressed[8:])
+                    record_block = lzo.decompress(record_block_compressed[start + 8:end], initSize = decompressed_size, blockSize=1308672)
             elif record_block_type == b'\x02\x00\x00\x00':
                 # decompress
                 _type = 2
@@ -683,7 +684,7 @@ class MDX(MDict):
                     break
                 # decompress
                 header = b'\xf0' + pack('>I', decompressed_size)
-                record_block = lzo.decompress(header + record_block_compressed[8:])
+                record_block = lzo.decompress(record_block_compressed[8:], initSize = decompressed_size, blockSize=1308672)
             # zlib compression
             elif record_block_type == b'\x02\x00\x00\x00':
                 # decompress
@@ -794,7 +795,7 @@ class MDX(MDict):
                 # decompress
                 header = b'\xf0' + pack('>I', decompressed_size)
                 if check_block:
-                    record_block = lzo.decompress(header + record_block_compressed[8:])
+                    record_block = lzo.decompress(record_block_compressed[8:], initSize = decompressed_size, blockSize=1308672)
             # zlib compression
             elif record_block_type == b'\x02\x00\x00\x00':
                 # decompress
