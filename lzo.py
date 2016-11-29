@@ -241,6 +241,6 @@ def _decompress(inBuf, outBuf):
 def decompress(input, initSize = 16000, blockSize = 8192):
     output = FlexBuffer()
     output.alloc(initSize, blockSize)
-    return _decompress(input, output)
+    return _decompress(bytearray(input), output)
 
 

@@ -7,7 +7,7 @@ from timeit import timeit
 
 class TestMdict(unittest.TestCase):
 
-    _mdx_file = glob.glob("mdx/ll*.mdx")[0]
+    _mdx_file = glob.glob("mdx/Vocabulary*.mdx")[0]
     _repeat = 100
     # remove existing db
     for f in glob.glob("mdx/Vocabulary*.db"):
@@ -37,7 +37,7 @@ class TestMdict(unittest.TestCase):
             os.remove(f)
         print("***with sql index***\n")
         start = time.time() 
-        bd = IndexBuilder(self._mdx_file, sql_index = True, check = True)
+        bd = IndexBuilder(self._mdx_file, sql_index = True, check = False)
         print("takes {0} seconds to build with sql index\n".format(time.time() - start))
          
         start = time.time()

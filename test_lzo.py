@@ -1,6 +1,6 @@
 from mdict_query import IndexBuilder
 
-bd = IndexBuilder("larouss.mdx")
+bd = IndexBuilder("mdx\\lls.mdx")
 keys = bd.get_mdx_keys("ded*")
-result = bd.mdx_lookup(keys[0])
+result = bd.mdx_lookup('a')
 pass
