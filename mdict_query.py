@@ -20,6 +20,8 @@ except ImportError:
 if sys.hexversion >= 0x03000000:
     unicode = str
 
+version = '1.1'
+
 
 class IndexBuilder(object):
     #todo: enable history
@@ -29,6 +31,7 @@ class IndexBuilder(object):
         self._encoding = ''
         self._stylesheet = {}
         self._title = ''
+        self._version = ''
         self._description = ''
         self._sql_index = sql_index
         self._check = check
@@ -48,6 +51,18 @@ class IndexBuilder(object):
             #read from META table
             conn = sqlite3.connect(self._mdx_db)
             #cursor = conn.execute("SELECT * FROM META")
+            cursor = conn.execute("SELECT * FROM META WHERE key = \"version\"")
+            #判断有无版本号
+            for cc in cursor:
+                self._version = cc[1]
+            if not self._version:
+                conn.close()
+                self._make_mdx_index(self._mdx_db)
+                if os.path.isfile(_filename + '.mdd'):
+                    self._mdd_file = _filename + ".mdd"
+                    self._mdd_db = _filename + ".mdd.db"
+                    self._make_mdd_index(self._mdd_db)     
+                return None
             cursor = conn.execute("SELECT * FROM META WHERE key = \"encoding\"")
             for cc in cursor:
                 self._encoding = cc[1]
@@ -100,6 +115,8 @@ class IndexBuilder(object):
         return txt_styled
 
     def _make_mdx_index(self, db_name):
+        if os.path.exists(db_name):
+            os.remove(db_name)
         mdx = MDX(self._mdx_file)
         self._mdx_db = db_name
         returned_index = mdx.get_index(check_block = self._check)
@@ -152,7 +169,8 @@ class IndexBuilder(object):
             [('encoding', meta['encoding']),
              ('stylesheet', meta['stylesheet']),
              ('title', meta['title']),
-             ('description', meta['description'])
+             ('description', meta['description']),
+             ('version', version)
              ]
             )
         
@@ -173,6 +191,8 @@ class IndexBuilder(object):
 
 
     def _make_mdd_index(self, db_name):
+        if os.path.exists(db_name):
+            os.remove(db_name)
         mdd = MDD(self._mdd_file)
         self._mdd_db = db_name
         index_list = mdd.get_index(check_block = self._check)
