@@ -55,13 +55,17 @@ class IndexBuilder(object):
             #判断有无版本号
             for cc in cursor:
                 self._version = cc[1]
+            ################# if not version in fo #############
             if not self._version:
+                print("version info not found")
                 conn.close()
                 self._make_mdx_index(self._mdx_db)
+                print("mdx.db rebuilt!")
                 if os.path.isfile(_filename + '.mdd'):
                     self._mdd_file = _filename + ".mdd"
                     self._mdd_db = _filename + ".mdd.db"
-                    self._make_mdd_index(self._mdd_db)     
+                    self._make_mdd_index(self._mdd_db)
+                    print("mdd.db rebuilt!")
                 return None
             cursor = conn.execute("SELECT * FROM META WHERE key = \"encoding\"")
             for cc in cursor:
