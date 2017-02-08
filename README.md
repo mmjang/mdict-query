@@ -24,6 +24,10 @@ Filter mdx keys by wildcard:
 Looks up mdx with a key:
 
     result_text = builder.mdx_lookup('dedication')
+
+There is an option to ignore cases:
+
+    result_text = builder.mdx_lookup('Dedication', ignorecase = True)
     
 Get all mdd keys:
 
