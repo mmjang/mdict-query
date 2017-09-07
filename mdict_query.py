@@ -121,6 +121,54 @@ class IndexBuilder(object):
                 txt_styled = txt_styled + style[0] + p + style[1]
         return txt_styled
 
+
+    def make_sqlite(self):
+        sqlite_file = self._mdx_file + '.sqlite.db'
+        if os.path.exists(sqlite_file):
+            os.remove(sqlite_file)
+        mdx = MDX(self._mdx_file)
+        conn = sqlite3.connect(sqlite_file)
+        cursor = conn.cursor()
+        cursor.execute(
+            ''' CREATE TABLE MDX_DICT
+                (key text not null,
+                value text
+                )'''
+            )
+
+        # remove '(pīnyīn)', remove `1`:
+        aeiou = 'āáǎàĀÁǍÀēéěèêềếĒÉĚÈÊỀẾīíǐìÍǏÌōóǒòŌÓǑÒūúǔùŪÚǓÙǖǘǚǜǕǗǙǛḾǹňŃŇ'
+        pattern = r"`\d+`|[（\(]?['a-z%s]*[%s]['a-z%s]*[\)）]?"%(aeiou, aeiou, aeiou)
+        tuple_list = [(key.decode(), re.sub(pattern, '', value.decode()))
+            for key, value in mdx.items()]
+
+        cursor.executemany('INSERT INTO MDX_DICT VALUES (?,?)', tuple_list)
+
+        returned_index = mdx.get_index(check_block = self._check)
+        meta = returned_index['meta']
+        cursor.execute(
+            '''CREATE TABLE META (key text, value text)''')
+
+        cursor.executemany(
+            'INSERT INTO META VALUES (?,?)',
+            [('encoding', meta['encoding']),
+             ('stylesheet', meta['stylesheet']),
+             ('title', meta['title']),
+             ('description', meta['description']),
+             ('version', version)
+             ]
+            )
+
+        if self._sql_index:
+            cursor.execute(
+                '''
+                CREATE INDEX key_index ON MDX_DICT (key)
+                '''
+                )
+        conn.commit()
+        conn.close()
+
+
     def _make_mdx_index(self, db_name):
         if os.path.exists(db_name):
             os.remove(db_name)

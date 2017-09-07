@@ -1,4 +1,4 @@
-This is a python module for looking up `mdict` dictionary files (`.mdx` and `.mdd`). 
+This is a python module for looking up `mdict` dictionary files (`.mdx` and `.mdd`). Function converting `mdx` to `sqlite` is added.
 
 >>Based on [readmdict](https://bitbucket.org/xwang/mdict-analysis) by [Xiaoqiang Wang](http://bitbucket.org/xwang/).
 
@@ -10,6 +10,13 @@ Constructs the `IndexBuilder` object, which builds the sqlite index for `.mdx` f
 
     from mdict_query import IndexBuilder
     builder = IndexBuilder('ode.mdx')
+
+Convert `mdx` to `sqlite`:  
+```
+builder.make_sqlite()
+# Check the output file `ode.mdx.sqlite.db` near your `ode.mdx`
+```
+
 
 Get all mdx keys:
 
